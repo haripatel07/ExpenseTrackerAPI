@@ -21,7 +21,6 @@ def add_income(income: IncomeCreate, db: Session = Depends(get_db), user=Depends
 
 # Get all incomes
 @router.get("/", response_model=list[IncomeOut])
-@router.get("/", response_model=list[IncomeOut])
 def get_incomes(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -48,5 +47,25 @@ def get_incomes(
 
     return query.offset(skip).limit(limit).all()
 
+# Delete an income by ID
+@router.delete("/{income_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_income(
+    income_id : int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    db_income = db.query(Income).filter(
+        Income.id == income_id,
+        Income.user_id == current_user.id
+    ).first()
+
+    if not db_income:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Income not found or not authorized"
+        )
+    db.delete(db_income)
+    db.commit()
+    return {"detail": "Income deleted successfully"}
 
     

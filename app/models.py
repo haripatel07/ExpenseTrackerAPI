@@ -1,7 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from app.database import Base
-from typing import Optional
 
 # Create a model for the User
 class User(Base):
