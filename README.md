@@ -36,10 +36,7 @@ app/
 ├── models.py
 └── schema.py
 
-.venv/            # Virtual environment
-.env               # Environment variables
 .gitignore         # Files to ignore in git
-expenses.db        # SQLite Database file
 LICENSE            # Project license
 README.md          # Project documentation
 requirements.txt   # Project dependencies

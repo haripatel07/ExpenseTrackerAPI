@@ -12,7 +12,7 @@ from app.routes.auth_router import get_current_user
 router = APIRouter(prefix="/summary", tags=["summary"])
 
 # Get total income and expense for the user
-@router.get("/summary", response_model=SummaryOut)
+@router.get("/", response_model=SummaryOut)
 def get_summary(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
