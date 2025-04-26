@@ -11,10 +11,10 @@ class User(Base):
     email: Mapped[str] = mapped_column(String, unique=True, index=True)
     hashed_password: Mapped[str] = mapped_column(String)
 
-    category = relationship("Category", back_populates="user")
-    expenses = relationship("Expense", back_populates="user")
-    incomes = relationship("Income", back_populates="user")
-    summary = relationship("Summary", back_populates="user")
+    category = relationship("Category", back_populates="user", cascade="all, delete")
+    expenses = relationship("Expense", back_populates="user", cascade="all, delete")
+    incomes = relationship("Income", back_populates="user", cascade="all, delete")
+    summary = relationship("Summary", back_populates="user", cascade="all, delete")
 
 
 # Create model for Category of expense

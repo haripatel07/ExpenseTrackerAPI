@@ -25,6 +25,12 @@ def get_summary(
     query_expenses = db.query(Expense).filter(Expense.user_id == current_user.id)
     query_incomes = db.query(Income).filter(Income.user_id == current_user.id)
 
+    if not query_expenses.count() and not query_incomes.count():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No expenses or incomes found for the user.",
+        )
+
     if start_date:
         query_expenses= query_expenses.filter(Expense.date >= start_date)
         query_incomes = query_incomes.filter(Income.date >= start_date)

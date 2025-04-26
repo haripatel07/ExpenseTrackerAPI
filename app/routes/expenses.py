@@ -55,6 +55,12 @@ def get_expenses(
 ):
     query = db.query(Expense).filter(Expense.user_id == current_user.id)
 
+    if not query.count():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No expenses found for the current user"
+        )
+
     if start_date:
         query = query.filter(Expense.date >= start_date)
     if end_date:
@@ -69,7 +75,7 @@ def get_expenses(
     return query.offset(skip).limit(limit).all()
 
 # Delete an expense by ID
-@router.delete("/{expense_id}", status_code = status.HTTP_204_NO_CONTENT)
+@router.delete("/{expense_id}", status_code = status.HTTP_200_OK)
 def delete_expense(
     expense_id: int,
     db: Session = Depends(get_db),
@@ -88,4 +94,4 @@ def delete_expense(
 
     db.delete(db_expense)
     db.commit()
-    return {"detail" : "Expense deleted successfully"}
+    return {"msg" : "Expense deleted successfully"}

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy import asc, desc
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models import Income, User
+from app.models import Income, User, Category
 from app.schema import IncomeCreate, IncomeOut
 from app.routes.auth_router import get_current_user
 from typing import Optional
@@ -12,8 +12,25 @@ router = APIRouter(prefix="/income", tags=["Income"])
 
 # Create a new income
 @router.post("/", response_model=IncomeOut)
-def add_income(income: IncomeCreate, db: Session = Depends(get_db), user=Depends(get_current_user)):
-    db_income = Income(**income.dict(), user_id=user.id)
+def add_income(income: IncomeCreate, db: Session = Depends(get_db), current_user=Depends(get_current_user)):
+    # Check if the category exists
+    category = db.query(Category).filter(
+        Category.id == income.category_id,
+        Category.user_id == current_user.id
+    ).first()
+
+    if not category:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Category not found"
+        )
+    db_income = Income(
+        description=income.description,
+        amount=income.amount,
+        date=income.date,
+        category_id=income.category_id,
+        user_id=current_user.id
+    )
     db.add(db_income)
     db.commit()
     db.refresh(db_income)
@@ -34,6 +51,12 @@ def get_incomes(
 ):
     query = db.query(Income).filter(Income.user_id == current_user.id)
 
+    if not query.count():
+        raise HTTPException(
+            status_code = status.HTTP_404_NOT_FOUND,
+            detail = "No incomes found for this user"
+        )
+
     if start_date:
         query = query.filter(Income.date >= start_date)
     if end_date:
@@ -48,7 +71,7 @@ def get_incomes(
     return query.offset(skip).limit(limit).all()
 
 # Delete an income by ID
-@router.delete("/{income_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{income_id}", status_code=status.HTTP_200_OK)
 def delete_income(
     income_id : int,
     db: Session = Depends(get_db),
@@ -66,6 +89,6 @@ def delete_income(
         )
     db.delete(db_income)
     db.commit()
-    return {"detail": "Income deleted successfully"}
+    return {"msg": "Income deleted successfully"}
 
     

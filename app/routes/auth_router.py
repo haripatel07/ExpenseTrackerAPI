@@ -15,8 +15,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 @router.post("/login", response_model=Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = db.query(User).filter(User.username == form_data.username).first()
-
-    if not user or not verify_password(form_data.password, user.hashed_password):
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
     access_token = create_access_token(data={"sub": user.username})
@@ -44,3 +45,10 @@ def get_profile(current_user: User = Depends(get_current_user)):
 @router.post("/logout")
 def logout():
     return {"msg": "Logged out successfully. Please clear your client-side token."}
+
+# Delete User Route: Delete the current user account
+@router.delete("/delete", status_code=status.HTTP_200_OK)
+def delete_user(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    db.delete(current_user)
+    db.commit()
+    return {"msg": "User deleted successfully"}
